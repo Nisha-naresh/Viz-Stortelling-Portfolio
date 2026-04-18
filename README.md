@@ -14,14 +14,14 @@ This portfolio documents my work in MBAI 5400G: Visualization & Storytelling at 
 
 ## Tools Used
 - Python (Matplotlib, Plotly)
-- Flourish
+- Figma
 - HTML / CSS / JavaScript
 - Miro
 - charts.livegap.com
 - Canva
 
 ## Course
-- **Course:** MBAI 5400G — Visualization & Storytelling
+- **Course:** MBAI 5400G - Visualization & Storytelling
 - **Professor:** Gabby Resch
 - **University:** Ontario Tech University
 - **Semester:** Winter 2026
