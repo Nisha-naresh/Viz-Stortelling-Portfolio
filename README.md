@@ -7,10 +7,10 @@ This portfolio documents my work in MBAI 5400G: Visualization & Storytelling at 
 [View Portfolio](https://nisha-naresh.github.io/Viz-Stortelling-Portfolio/)
 
 ## Assignments
-| 01 | Driving Into 2026: Ontario's New Driving Laws 
-| 02 | Redesigning Minard's Napoleon's March 
-| 03 | Your Cart Costs More: Canada Food Inflation 
-| 04 | AI & Oshawa Housing Affordability 
+- Driving Into 2026: Ontario's New Driving Laws 
+- Redesigning Minard's Napoleon's March 
+- Your Cart Costs More: Canada Food Inflation 
+- AI & Oshawa Housing Affordability 
 
 ## Tools Used
 - Python (Matplotlib, Plotly)
