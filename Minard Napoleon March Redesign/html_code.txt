@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redesigning Minard's Napoleon's March (1869) — An Interactive Visualization</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1208;--ink2:#3d2b0e;--sepia:#8B6914;
+  --parch:#faf6ef;--parch2:#f0e8d5;--rule:#c8a96e;
+  --red:#b5221e;--col:700px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--parch);color:var(--ink);font-family:'Source Serif 4',Georgia,serif;font-size:17px;line-height:1.75;font-weight:300}
+
+/* TOP BAR */
+.topbar{background:var(--ink);color:var(--parch);font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;padding:10px 40px;
+  display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.topbar .pub{color:var(--rule);font-weight:500}
+.topbar .right{opacity:.65}
+
+/* HERO */
+.hero{background:var(--ink);color:var(--parch);padding:64px 40px 52px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.01) 2px,rgba(255,255,255,.01) 4px)}
+.hero-inner{max-width:var(--col);margin:0 auto;position:relative}
+.kicker{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--rule);margin-bottom:18px;
+  display:flex;align-items:center;gap:12px;
+  opacity:0;animation:fadeUp .7s ease .1s forwards}
+.kicker::before{display:none}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.4rem);
+  font-weight:900;line-height:1.08;letter-spacing:-.02em;margin-bottom:22px;
+  opacity:0;animation:fadeUp .7s ease .25s forwards}
+.hero h1 em{color:var(--rule);font-style:italic}
+.hero-deck{font-size:1.05rem;color:rgba(250,246,239,.68);line-height:1.65;
+  max-width:520px;margin-bottom:32px;
+  opacity:0;animation:fadeUp .7s ease .4s forwards}
+.hero-meta{display:flex;gap:28px;border-top:1px solid rgba(200,169,110,.25);padding-top:16px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(250,246,239,.45);
+  opacity:0;animation:fadeUp .7s ease .55s forwards}
+
+/* STAT BAR */
+.stat-bar{background:var(--parch2);border-top:3px solid var(--red);padding:24px 40px}
+.stat-bar-inner{max-width:var(--col);margin:0 auto;display:grid;
+  grid-template-columns:repeat(3,1fr);gap:28px}
+.stat-item{text-align:center;border-right:1px solid var(--rule)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:700;
+  color:var(--red);line-height:1;display:block}
+.stat-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink2);margin-top:6px;display:block}
+
+/* CONTENT */
+.content{max-width:var(--col);margin:0 auto;padding:48px 40px}
+.drop-cap::first-letter{font-family:'Playfair Display',serif;font-size:4.8em;font-weight:900;
+  float:left;line-height:.82;margin:.06em .1em 0 0;color:var(--ink)}
+p{margin-bottom:1.4em}
+p + p{text-indent:1.4em}
+p.drop-cap + p{text-indent:0}
+h2{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;
+  line-height:1.2;margin:2em 0 .7em;color:var(--ink)}
+h2.s-label{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--sepia);font-weight:500;margin-bottom:4px;margin-top:2.5em}
+hr.rule{border:none;border-top:1px solid var(--rule);margin:2em 0;opacity:.5}
+
+/* PULL QUOTE */
+.pull-quote{border-left:4px solid var(--red);padding:18px 24px;margin:2em -16px;background:var(--parch2)}
+.pull-quote p{font-family:'Playfair Display',serif;font-size:1.2rem;font-style:italic;
+  line-height:1.45;margin:0;text-indent:0!important}
+.pull-quote cite{display:block;font-family:'JetBrains Mono',monospace;font-size:9px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--sepia);margin-top:10px;font-style:normal}
+
+/* PORTRAIT ROW */
+.portrait-row{display:grid;grid-template-columns:220px 1fr;gap:40px;align-items:start;margin:2em 0}
+.port-frame{position:relative}
+.port-frame::before{content:'';position:absolute;inset:-8px -8px 8px 8px;
+  border:1.5px solid var(--rule);opacity:.5;z-index:0}
+.port-frame img{width:100%;display:block;position:relative;z-index:1;filter:sepia(10%) contrast(1.05)}
+.port-cap{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--sepia);text-align:center;margin-top:10px}
+.port-body p{font-size:.96rem;line-height:1.78;color:rgba(26,18,8,.78);margin-bottom:12px}
+
+/* TIMELINE */
+.timeline{margin:1.5em 0}
+.tl-row{display:grid;grid-template-columns:80px 1fr;gap:16px;
+  padding:12px 0;border-bottom:1px solid rgba(200,169,110,.25)}
+.tl-yr{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--sepia)}
+.tl-body{font-size:.88rem;line-height:1.55;color:rgba(26,18,8,.65)}
+.tl-body strong{display:block;color:var(--ink);font-weight:600}
+
+/* SIX VARIABLES -- compact 2 col */
+.var-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1.2em 0}
+.var-card{background:var(--parch2);border:1px solid var(--rule);padding:12px 14px;
+  display:grid;grid-template-columns:40px 1fr;gap:10px;align-items:start}
+.var-num{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;
+  color:var(--red);line-height:1}
+.var-right{}
+.var-name{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--sepia);display:block;margin-bottom:3px}
+.var-desc{font-size:.8rem;line-height:1.45;color:var(--ink2)}
+
+/* GALLERY */
+.gallery-section{background:var(--ink);padding:52px 0}
+.gallery-inner{max-width:960px;margin:0 auto;padding:0 36px}
+.gallery-tag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--rule);margin-bottom:10px;display:block;text-align:center}
+.gallery-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;
+  color:var(--parch);text-align:center;margin-bottom:8px}
+.gallery-sub{font-family:'Source Serif 4',serif;font-size:.9rem;font-style:italic;
+  color:rgba(250,246,239,.45);text-align:center;margin-bottom:28px}
+.map-pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.map-card{background:#0d0a05;border:1px solid rgba(200,169,110,.18);overflow:hidden;
+  position:relative;cursor:zoom-in;transition:transform .25s ease;transform-origin:center}
+.map-card:hover{transform:scale(1.02)}
+.map-card img{width:100%;display:block;max-height:240px;object-fit:cover;
+  object-position:center 35%;transition:filter .3s}
+.map-card:hover img{filter:brightness(1.08)}
+/* Shimmer on hover */
+.map-card::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(120deg,transparent 30%,rgba(200,169,110,.08) 50%,transparent 70%);
+  background-size:200% 100%;opacity:0;transition:opacity .3s}
+.map-card:hover::after{opacity:1;animation:shimmer 1.2s ease infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.map-card-cap{padding:11px 16px;font-family:'JetBrains Mono',monospace;font-size:8.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:rgba(200,169,110,.5);
+  line-height:1.55;border-top:1px solid rgba(200,169,110,.1)}
+.map-card-cap strong{color:rgba(200,169,110,.8);display:block;margin-bottom:3px}
+
+/* INTERACTIVE MAP SECTION */
+.map-section{background:var(--parch);padding:48px 0 36px;border-top:2px solid var(--rule)}
+.map-header{max-width:940px;margin:0 auto 20px;padding:0 32px}
+.map-kicker{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--sepia);margin-bottom:6px}
+.map-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;
+  color:var(--ink);line-height:1.3;margin-bottom:2px}
+.map-title-en{font-family:'Source Serif 4',serif;font-size:.88rem;font-style:italic;
+  color:var(--ink2);margin-bottom:4px}
+.map-byline{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em;
+  color:var(--sepia);text-transform:uppercase}
+.map-wrap,.temp-wrap{max-width:940px;margin:0 auto;padding:0 24px}
+#minard-svg,#temp-svg{width:100%;height:auto;display:block}
+.temp-wrap{margin-top:4px}
+.map-legend{max-width:940px;margin:14px auto 0;padding:0 24px;
+  display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.map-legend span{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink2);display:flex;align-items:center;gap:7px}
+.leg-sw{display:inline-block;width:22px;height:6px;border-radius:1px}
+.map-hint{color:var(--sepia)!important;margin-left:auto;font-style:italic}
+
+/* Scrolly reveal on segments */
+.seg-reveal{opacity:0;transform:translateX(-12px);transition:opacity .5s ease,transform .5s ease}
+.seg-reveal.visible{opacity:1;transform:translateX(0)}
+
+/* Tooltip */
+#map-tooltip{position:fixed;pointer-events:none;opacity:0;transition:opacity .15s ease;
+  background:rgba(20,14,4,.97);border:1px solid rgba(200,169,110,.5);
+  padding:12px 15px;font-family:'Source Serif 4',serif;font-size:13px;
+  color:#FAF0DC;max-width:220px;line-height:1.55;z-index:999;
+  box-shadow:0 6px 28px rgba(0,0,0,.5);
+  transform:scale(.94) translateY(4px);
+  transition:opacity .18s ease,transform .18s ease}
+#map-tooltip.vis{opacity:1;transform:scale(1) translateY(0)}
+#map-tooltip strong{font-family:'Playfair Display',serif;font-size:14px;display:block;margin-bottom:3px}
+#map-tooltip .ts{font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:rgba(250,246,239,.6);margin-top:4px}
+#map-tooltip .ts span{color:#FAF0DC;font-weight:500}
+#map-tooltip .tbar{height:3px;background:rgba(248,240,200,.12);border-radius:2px;margin-top:8px;overflow:hidden}
+#map-tooltip .tbar-fill{height:100%;border-radius:2px;transition:width .3s ease}
+
+/* REDESIGN EXPLANATION */
+.explain-sec{background:var(--parch2);border-top:2px solid var(--rule);padding:48px 0}
+.explain-inner{max-width:var(--col);margin:0 auto;padding:0 40px}
+
+/* SOURCES */
+.sources-section{background:var(--parch2);border-top:3px solid var(--ink);padding:44px 40px 36px}
+.sources-inner{max-width:var(--col);margin:0 auto}
+.s-head{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--sepia);border-bottom:1px solid var(--rule);
+  padding-bottom:7px;margin-bottom:12px;font-weight:500}
+.s-body{font-size:.82rem;line-height:1.72;color:var(--ink2)}
+.s-divider{border:none;border-top:1px solid rgba(200,169,110,.28);margin:22px 0}
+.s-credits{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.08em;
+  color:rgba(139,105,20,.6);line-height:2;margin-top:18px}
+
+footer{background:var(--ink);color:rgba(250,246,239,.38);padding:28px 40px;
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;line-height:2.2;text-align:center}
+
+/* Reveal on scroll */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .65s ease,transform .65s ease}
+.reveal.on{opacity:1;transform:none}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+@keyframes panelIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes rippleOut{0%{r:5;opacity:.7;stroke-width:2}100%{r:22;opacity:0;stroke-width:.5}}
+@keyframes rippleOut2{0%{r:5;opacity:.5;stroke-width:1.5}100%{r:32;opacity:0;stroke-width:.3}}
+.city-dot{transition:r .2s ease,filter .2s ease}
+.city-dot:hover{filter:drop-shadow(0 0 5px rgba(181,34,30,.5))}
+
+@keyframes pulse-dot{0%,100%{r:3;opacity:.8}50%{r:5;opacity:1}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="pub">Visualization and Storytelling</span>
+  <span class="right">Ontario Tech University &middot; Winter 2026</span>
+</div>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="kicker">Assignment</div>
+    <h1>Redesigning Minard's<br><em>Napoleon's March</em> (1869)</h1>
+    <p class="hero-deck">An Interactive Visualization. In 1869, a retired French engineer encoded six dimensions of military catastrophe into one page. This redesign brings it to life through animation and interaction.</p>
+    <div class="hero-meta">
+      <span>Nisha Naresh</span>
+      <span>Instructor: Gabby Resch</span>
+      <span>March 2026</span>
+    </div>
+  </div>
+</header>
+
+<!-- STAT BAR -->
+<div class="stat-bar">
+  <div class="stat-bar-inner">
+    <div class="stat-item"><span class="stat-num">422K</span><span class="stat-label">Soldiers entered Russia</span></div>
+    <div class="stat-item"><span class="stat-num">10K</span><span class="stat-label">Returned alive</span></div>
+    <div class="stat-item"><span class="stat-num">6</span><span class="stat-label">Variables in one image</span></div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<main class="content">
+
+  <p class="drop-cap">Before bar charts became ordinary and before dashboards became wallpaper, there was one image that showed what data could do when it stopped performing and started mourning. Charles Joseph Minard drew it in 1869, at eighty-eight years old. He called it a figurative chart. Historians would later describe it as something closer to an epitaph.</p>
+
+  <div class="pull-quote">
+    <p>"The best statistical graphic ever drawn."</p>
+    <cite>Edward Tufte, The Visual Display of Quantitative Information, 1983</cite>
+  </div>
+
+  <hr class="rule">
+  <h2 class="s-label">The Man</h2>
+  <h2>Charles Joseph Minard (1781 to 1870)</h2>
+
+  <div class="portrait-row reveal">
+    <div>
+      <div class="port-frame">
+        <img src="IMAGE_DATA_HERE" alt="Charles Joseph Minard">
+      </div>
+      <p class="port-cap">C.J. Minard &mdash; 1781 to 1870</p>
+    </div>
+    <div class="port-body">
+      <p>Born in Dijon, Minard spent his career as a civil engineer of bridges and roads, rising to the highest rank in the national inspectorate. He retired in 1851 and, in retirement, produced over fifty figurative maps encoding flows of trade, migration, and war.</p>
+      <p>He drew the Napoleon campaign map at eighty-eight years old, two years before his death. It remains the benchmark against which every data visualization is measured.</p>
+      <div class="timeline">
+        <div class="tl-row">
+          <span class="tl-yr">1781</span>
+          <div class="tl-body"><strong>Born in Dijon, France</strong>Educated at the Ecole Polytechnique and trained as a civil engineer</div>
+        </div>
+        <div class="tl-row">
+          <span class="tl-yr">1869</span>
+          <div class="tl-body"><strong>Napoleon's March Map</strong>Created at age 88. Edward Tufte later named it the greatest statistical graphic ever drawn</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- GALLERY: both original maps side by side -->
+<section class="gallery-section">
+  <div class="gallery-inner">
+    <span class="gallery-tag reveal">Minard's Original Works</span>
+    <h2 class="gallery-title reveal">Two Figurative Maps by Charles Joseph Minard</h2>
+    <p class="gallery-sub reveal">Hover over each map to enlarge</p>
+    <div class="map-pair reveal">
+      <div class="map-card">
+        <img src="IMAGE_DATA_HERE" alt="Minard Canal du Centre 1844">
+        <p class="map-card-cap">
+          <strong>Canal du Centre &mdash; 1844</strong>
+          Figurative chart of commercial movement on the Canal du Centre. Width encodes tonnage of goods; colour encodes commodity type including coal, wood, stone, and grain. One of Minard's earliest stacked flow charts.
+        </p>
+      </div>
+      <div class="map-card">
+        <img src="IMAGE_DATA_HERE" alt="Minard Napoleon March 1869">
+        <p class="map-card-cap">
+          <strong>Napoleon's Russian Campaign &mdash; 1869</strong>
+          Figurative chart of successive losses of the French Army during the Russian Campaign of 1812 to 1813. Tan ribbon shows the advance; dark ribbon shows the retreat. Width shows troop count. Temperature chart below links cold to casualties.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE MAP -->
+<section class="map-section" id="interactive-map">
+  <div class="map-header reveal">
+    <p class="map-kicker">Interactive Redesign &middot; All Six Variables &middot; Hover Any Segment to Explore</p>
+    <p class="map-title">Carte figurative des pertes successives en hommes de l'Arm&eacute;e fran&ccedil;aise dans la campagne de Russie</p>
+
+
+  </div>
+
+  <div class="map-wrap">
+    <svg id="minard-svg" viewBox="0 0 920 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr-adv" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+          <polygon points="0 0,7 2.5,0 5" fill="rgba(200,165,50,0.5)"/>
+        </marker>
+        <marker id="arr-ret" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+          <polygon points="0 0,7 2.5,0 5" fill="rgba(100,30,30,0.55)"/>
+        </marker>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="2.5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- Parchment background -->
+      <rect width="920" height="300" fill="#faf6ef"/>
+      <!-- Subtle grid -->
+      <g stroke="rgba(122,92,40,0.1)" stroke-width="0.5">
+        <line x1="0" y1="75"  x2="920" y2="75"/>
+        <line x1="0" y1="150" x2="920" y2="150"/>
+        <line x1="0" y1="225" x2="920" y2="225"/>
+        <line x1="150" y1="0" x2="150" y2="300"/>
+        <line x1="300" y1="0" x2="300" y2="300"/>
+        <line x1="450" y1="0" x2="450" y2="300"/>
+        <line x1="600" y1="0" x2="600" y2="300"/>
+        <line x1="750" y1="0" x2="750" y2="300"/>
+      </g>
+
+      <!-- ADVANCE RIBBON -->
+      <polygon id="adv-ribbon"
+        points="48,117 139,149 230,142 321,143 412,144 533,168 621,158 712,147 872,131
+                872,165 712,185 621,202 533,218 412,206 321,225 230,244 139,265 48,261"
+        fill="#B8902A" fill-opacity="0.82"
+        stroke="#D4A832" stroke-width="0.8" stroke-opacity="0.4"
+        style="filter:drop-shadow(0 2px 4px rgba(180,140,40,.18))"/>
+
+      <!-- RETREAT RIBBON -->
+      <polygon id="ret-ribbon"
+        points="872,131 778,155 683,153 612,178 533,185 439,167 368,195 321,200 230,178 78,192 48,179
+                48,182 78,195 230,182 321,202 368,199 439,173 533,193 612,190 683,171 778,185 872,165"
+        fill="#5A1414" fill-opacity="0.90"
+        stroke="#8B2020" stroke-width="0.8" stroke-opacity="0.5"
+        style="filter:drop-shadow(0 2px 4px rgba(80,20,20,.25))"/>
+
+      <!-- INVISIBLE HOVER HIT AREAS -->
+      <polygon class="seg adv" data-n="Niemen River" data-t="422,000" data-p="100" data-d="Advance" data-dt="June 24, 1812"
+        points="48,117 139,149 139,265 48,261"/>
+      <polygon class="seg adv" data-n="Wilna" data-t="340,000" data-p="81" data-d="Advance" data-dt="Late June 1812"
+        points="139,149 230,142 230,244 139,265"/>
+      <polygon class="seg adv" data-n="Smorgoni" data-t="300,000" data-p="71" data-d="Advance" data-dt="July 1812"
+        points="230,142 321,143 321,225 230,244"/>
+      <polygon class="seg adv" data-n="Gloubokoe" data-t="240,000" data-p="57" data-d="Advance" data-dt="July 1812"
+        points="321,143 412,144 412,206 321,225"/>
+      <polygon class="seg adv" data-n="Smolensk" data-t="180,000" data-p="43" data-d="Advance" data-dt="Aug 16, 1812"
+        points="412,144 533,168 533,218 412,206"/>
+      <polygon class="seg adv" data-n="Dorogobouge" data-t="145,000" data-p="34" data-d="Advance" data-dt="August 1812"
+        points="533,168 621,158 621,202 533,218"/>
+      <polygon class="seg adv" data-n="Wjasma" data-t="130,000" data-p="31" data-d="Advance" data-dt="September 1812"
+        points="621,158 712,147 712,185 621,202"/>
+      <polygon class="seg adv" data-n="Moscow" data-t="100,000" data-p="24" data-d="Advance" data-dt="Sep 14, 1812"
+        points="712,147 872,131 872,165 712,185"/>
+      <polygon class="seg ret" data-n="Moscow" data-t="98,000" data-p="23" data-d="Retreat" data-dt="Oct 19, 1812"
+        points="872,131 778,155 778,185 872,165"/>
+      <polygon class="seg ret" data-n="Wjasma" data-t="87,000" data-p="21" data-d="Retreat" data-dt="October 1812"
+        points="778,155 683,153 683,171 778,185"/>
+      <polygon class="seg ret" data-n="Dorogobouge" data-t="55,000" data-p="13" data-d="Retreat" data-dt="November 1812"
+        points="683,153 612,178 612,190 683,171"/>
+      <polygon class="seg ret" data-n="Smolensk" data-t="37,000" data-p="9" data-d="Retreat" data-dt="Nov 9, 1812"
+        points="612,178 533,185 533,193 612,190"/>
+      <polygon class="seg ret" data-n="Berezina River" data-t="24,000" data-p="6" data-d="Retreat" data-dt="Nov 28, 1812"
+        points="533,185 439,167 439,173 533,193"/>
+      <polygon class="seg ret" data-n="Studienska" data-t="20,000" data-p="5" data-d="Retreat" data-dt="December 1812"
+        points="439,167 368,195 368,199 439,173"/>
+      <polygon class="seg ret" data-n="Minsk area" data-t="12,000" data-p="3" data-d="Retreat" data-dt="December 1812"
+        points="368,195 321,200 321,202 368,199"/>
+      <polygon class="seg ret" data-n="Wilna" data-t="8,000" data-p="2" data-d="Retreat" data-dt="Dec 7, 1812"
+        points="321,200 230,178 230,182 321,202"/>
+      <polygon class="seg ret" data-n="Smorgoni" data-t="6,000" data-p="1" data-d="Retreat" data-dt="December 1812"
+        points="230,178 78,192 78,195 230,182"/>
+      <polygon class="seg ret" data-n="Niemen River" data-t="4,000" data-p="1" data-d="Retreat" data-dt="Dec 14, 1812"
+        points="78,192 48,179 48,182 78,195"/>
+
+      <!-- CITY DOTS (black, clickable) and LABELS -->
+      <g font-family="Georgia,'Source Serif 4',serif">
+
+        <circle class="city-dot" id="dot-kowno" cx="48" cy="189" r="5.5" fill="#1a1208" opacity=".9" cursor="pointer"
+          data-city="Kowno" data-soldiers="422,000" data-pct="100"
+          data-info="The Grande Armee of 422,000 soldiers crossed the Niemen River here on June 24, 1812, beginning the Russian campaign. Napoleon believed Moscow would fall within weeks."/>
+        <text x="54" y="184" font-size="8.5" fill="rgba(26,18,8,.75)" pointer-events="none">Kowno</text>
+
+        <circle class="city-dot" id="dot-wilna" cx="230" cy="193" r="5" fill="#1a1208" opacity=".85" cursor="pointer"
+          data-city="Wilna" data-soldiers="340,000" data-pct="81"
+          data-info="By Wilna the army had already lost 82,000 men to disease, desertion, and battle. Cavalry horses were dying in vast numbers, and supply lines were breaking down before the campaign had truly begun."/>
+        <text x="216" y="212" font-size="8" fill="rgba(26,18,8,.7)" pointer-events="none">Wilna</text>
+
+        <circle class="city-dot" id="dot-smolensk" cx="412" cy="175" r="5" fill="#1a1208" opacity=".85" cursor="pointer"
+          data-city="Smolensk" data-soldiers="180,000" data-pct="43"
+          data-info="Smolensk fell after fierce fighting on August 16 to 17, 1812. Napoleon hoped to end the campaign here, but the Russians burned the city and retreated eastward, drawing him deeper into Russian territory."/>
+        <text x="398" y="166" font-size="8" fill="rgba(26,18,8,.7)" pointer-events="none">Smolensk</text>
+
+        <circle class="city-dot" id="dot-dorog" cx="533" cy="189" r="5" fill="#1a1208" opacity=".85" cursor="pointer"
+          data-city="Dorogobouge" data-soldiers="37,000" data-pct="9"
+          data-info="During the retreat, starvation and freezing temperatures were now killing more soldiers than any battle. The army that had numbered over 400,000 was reduced to a thin column of exhausted, frostbitten survivors."/>
+        <text x="537" y="177" font-size="7.5" fill="rgba(26,18,8,.65)" pointer-events="none">Dorogobouge</text>
+
+        <circle class="city-dot" id="dot-wjasma" cx="621" cy="180" r="5" fill="#1a1208" opacity=".85" cursor="pointer"
+          data-city="Wjasma" data-soldiers="55,000" data-pct="13"
+          data-info="French and Russian forces clashed at Wjasma on November 3, 1812. The French lost 4,000 men in a single day while already collapsing from hunger and cold. Discipline across the retreating columns had nearly broken down entirely."/>
+        <text x="625" y="174" font-size="8" fill="rgba(26,18,8,.7)" pointer-events="none">Wjasma</text>
+
+        <!-- Moscow: pulsing clickable dot -->
+        <circle class="city-dot" id="dot-moscow" cx="872" cy="148" r="7" fill="#1a1208" opacity=".95" cursor="pointer"
+          style="animation:pulse-dot 2s ease-in-out infinite"
+          data-city="Moscow" data-soldiers="100,000" data-pct="24"
+          data-info="Napoleon entered a burning, abandoned Moscow on September 14, 1812. He waited 35 days for a Russian peace offer that never came. On October 19 he ordered the retreat. The army that marched out numbered just 98,000 soldiers."/>
+        <text x="855" y="138" font-size="10" font-weight="600" fill="#1a1208" pointer-events="none"
+          style="filter:drop-shadow(0 1px 0 rgba(250,240,200,.4))">Moscow</text>
+
+        <circle class="city-dot" id="dot-berezina" cx="439" cy="170" r="5" fill="#8e1c1c" opacity=".9" cursor="pointer"
+          data-city="Berezina River" data-soldiers="24,000" data-pct="6"
+          data-info="The Berezina crossing on November 28, 1812 was the single worst disaster of the retreat. Around 25,000 soldiers and tens of thousands of civilians drowned or froze crossing the icy river. The temperature was minus 38 Celsius."/>
+        <text x="420" y="161" font-size="7.5" fill="rgba(120,40,40,.8)" pointer-events="none">Berezina</text>
+
+      </g>
+
+      <!-- TROOP COUNT LABELS -->
+      <g font-family="'JetBrains Mono',monospace" font-size="7.5" fill="rgba(26,18,8,.45)" text-anchor="middle">
+        <text x="90"  y="192">422,000</text>
+        <text x="280" y="192">300,000</text>
+        <text x="462" y="174">180,000</text>
+        <text x="790" y="155">100,000</text>
+        <text x="730" y="175">87,000</text>
+        <text x="572" y="192">37,000</text>
+        <text x="150" y="190">~6,000</text>
+      </g>
+
+      <!-- DIRECTION ARROWS -->
+      <path d="M 70,105 L 160,100" stroke="rgba(180,140,40,.45)" stroke-width="1" fill="none" marker-end="url(#arr-adv)"/>
+      <path d="M 840,270 L 750,275" stroke="rgba(120,30,30,.5)" stroke-width="1" fill="none" marker-end="url(#arr-ret)"/>
+      <text x="56"  y="97"  font-family="'JetBrains Mono',monospace" font-size="6.5" fill="rgba(160,120,30,.65)" letter-spacing="1">ADVANCE</text>
+      <text x="760" y="283" font-family="'JetBrains Mono',monospace" font-size="6.5" fill="rgba(120,30,30,.65)" letter-spacing="1">RETREAT</text>
+
+      <!-- LONGITUDE AXIS -->
+      <line x1="38" y1="290" x2="882" y2="290" stroke="rgba(122,92,40,.18)" stroke-width=".5"/>
+      <g font-family="'JetBrains Mono',monospace" font-size="7" fill="rgba(122,92,40,.45)" text-anchor="middle">
+        <text x="48"  y="298">24E</text>
+        <text x="230" y="298">26E</text>
+        <text x="412" y="298">28E</text>
+        <text x="533" y="298">30E</text>
+        <text x="712" y="298">35E</text>
+        <text x="872" y="298">37.6E</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="map-legend">
+    <span><span class="leg-sw" style="background:#B8902A"></span>Advance &middot; June to September 1812</span>
+    <span><span class="leg-sw" style="background:#5A1414"></span>Retreat &middot; October to December 1812</span>
+    <span>Ribbon width = surviving troop count</span>
+    <span class="map-hint">Hover any segment for details</span>
+  </div>
+
+  <!-- Temperature chart -->
+  <div class="temp-wrap">
+    <svg id="temp-svg" viewBox="0 0 920 120" xmlns="http://www.w3.org/2000/svg">
+      <rect width="920" height="120" fill="#f5f0e8"/>
+      <g stroke="rgba(122,92,40,0.08)" stroke-width=".5">
+        <line x1="0" y1="35" x2="920" y2="35"/>
+        <line x1="0" y1="60" x2="920" y2="60"/>
+        <line x1="0" y1="85" x2="920" y2="85"/>
+      </g>
+      <line x1="38" y1="30" x2="880" y2="30" stroke="rgba(160,50,50,.35)" stroke-width=".8" stroke-dasharray="4,3"/>
+      <text x="884" y="33" font-family="'JetBrains Mono',monospace" font-size="7" fill="rgba(160,50,50,.55)">0C</text>
+      <polygon
+        points="872,30 778,52.6 683,52.6 612,82.6 533,65 439,90 368,105 321,95 230,65 78,90 48,52.6 48,110 872,110"
+        fill="rgba(55,90,160,.08)"/>
+      <polyline
+        points="872,30 778,52.6 683,52.6 612,82.6 533,65 439,90 368,105 321,95 230,65 78,90 48,52.6"
+        fill="none" stroke="#5a7aaa" stroke-width="1.8" stroke-linejoin="round"/>
+      <g fill="#1a1208">
+        <circle cx="872" cy="30"   r="3.2"/><circle cx="778" cy="52.6" r="3.2"/>
+        <circle cx="683" cy="52.6" r="3.2"/><circle cx="612" cy="82.6" r="3.2"/>
+        <circle cx="533" cy="65"   r="3.2"/><circle cx="439" cy="90"   r="3.2"/>
+        <circle cx="368" cy="105"  r="3.2"/><circle cx="321" cy="95"   r="3.2"/>
+        <circle cx="230" cy="65"   r="3.2"/><circle cx="78"  cy="90"   r="3.2"/>
+        <circle cx="48"  cy="52.6" r="3.2"/>
+      </g>
+      <g font-family="'JetBrains Mono',monospace" font-size="7.5" fill="rgba(26,18,8,.65)" text-anchor="middle">
+        <text x="872" y="23">0C</text>
+        <text x="612" y="76">-26C</text>
+        <text x="439" y="84">-30C</text>
+        <text x="368" y="99">-38C</text>
+      </g>
+      <g font-family="'JetBrains Mono',monospace" font-size="6.8" fill="rgba(26,18,8,.38)" text-anchor="middle">
+        <text x="872" y="114">Oct 18</text><text x="778" y="114">Oct 24</text>
+        <text x="612" y="114">Nov 9</text><text x="533" y="114">Nov 14</text>
+        <text x="439" y="114">Nov 24</text><text x="368" y="114">Nov 28</text>
+        <text x="230" y="114">Dec 7</text><text x="78"  y="114">Dec 14</text>
+      </g>
+      <g font-family="'JetBrains Mono',monospace" font-size="7" fill="rgba(26,18,8,.32)" text-anchor="end">
+        <text x="34" y="33">0C</text><text x="34" y="63">-16C</text>
+        <text x="34" y="88">-29C</text><text x="34" y="108">-39C</text>
+      </g>
+      <line x1="36" y1="12" x2="36" y2="110" stroke="rgba(122,92,40,.14)" stroke-width=".5"/>
+      <text x="460" y="11" font-family="Georgia,serif" font-size="8" fill="rgba(26,18,8,.38)" text-anchor="middle" font-style="italic">
+        Temperature during the retreat, converted from Reaumur to Celsius (C = R x 1.25)
+      </text>
+    </svg>
+  </div>
+  <!-- CITY CLICK POPUP PANEL -->
+  <div id="city-panel" style="
+    max-width:940px;margin:20px auto 0;padding:0 24px;
+    display:none;
+  ">
+    <div id="city-panel-inner" style="
+      background:#faf6ef;border:1px solid #c8a96e;border-left:4px solid #b5221e;
+      padding:22px 28px;position:relative;
+      box-shadow:0 4px 20px rgba(26,18,8,.1);
+      animation:panelIn .3s ease;
+    ">
+      <button id="city-panel-close" style="
+        position:absolute;top:12px;right:14px;background:none;border:none;
+        font-size:18px;color:#8B6914;cursor:pointer;line-height:1;font-family:'JetBrains Mono',monospace;
+      ">x</button>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start">
+        <div>
+          <div id="panel-num" style="font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;color:#b5221e;line-height:1">422,000</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:#8B6914;margin-top:3px">soldiers here</div>
+          <div id="panel-pct-bar" style="margin-top:10px;width:80px;height:4px;background:rgba(26,18,8,.1);border-radius:2px;overflow:hidden">
+            <div id="panel-pct-fill" style="height:100%;background:#b5221e;border-radius:2px;width:100%;transition:width .5s ease .1s"></div>
+          </div>
+          <div id="panel-pct-lbl" style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#8B6914;margin-top:4px">100% of army</div>
+        </div>
+        <div>
+          <div id="panel-city" style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:#1a1208;margin-bottom:6px">Kowno</div>
+          <div id="panel-info" style="font-family:'Source Serif 4',serif;font-size:.88rem;line-height:1.7;color:rgba(26,18,8,.7)">City information here.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<div id="map-tooltip"></div>
+
+<!-- REDESIGN EXPLANATION + SIX VARIABLES -->
+<section class="explain-sec">
+  <div class="explain-inner">
+    <h2 class="s-label" style="margin-top:0">About This Redesign</h2>
+    <h2 style="margin-top:6px">How the Interactive Map Works</h2>
+    <p style="font-size:.97rem;line-height:1.78;color:rgba(26,18,8,.75)" class="reveal">This redesign preserves Minard's core visual argument: the width of the ribbon tells the story of human loss. Every segment of the advance and retreat is interactive. Hover over any part of the map to see exactly how many soldiers remained at that stage, the date, and the percentage of the original army who survived that far.</p>
+    <p style="font-size:.97rem;line-height:1.78;color:rgba(26,18,8,.75)" class="reveal">The temperature chart beneath the map shares the same geographic axis, so the relationship between falling temperatures and the collapsing army is visible at a glance. Temperatures originally in Reaumur degrees have been converted to Celsius for a modern reader. Every recorded temperature during the retreat fell below zero.</p>
+    <p style="font-size:.97rem;line-height:1.78;color:rgba(26,18,8,.75)" class="reveal">The most important design choice was keeping Minard's proportional width as the primary encoding. A number says 55,000. A ribbon that has almost disappeared says it with grief.</p>
+
+    <hr class="rule">
+    <h2 class="s-label">Six Variables in One Image</h2>
+    <h2 style="margin-top:6px">What This Map Encodes</h2>
+    <div class="var-grid" style="margin-top:1em">
+      <div class="var-card reveal">
+        <span class="var-num">01</span>
+        <div class="var-right"><span class="var-name">Geography</span><p class="var-desc">Named cities and the east-to-west longitude axis are preserved at correct relative positions, grounding every abstraction in real space.</p></div>
+      </div>
+      <div class="var-card reveal">
+        <span class="var-num">02</span>
+        <div class="var-right"><span class="var-name">Direction of March</span><p class="var-desc">Tan gold for the advance toward Moscow. Dark brown for the retreat. Two colours carry the entire narrative without a word of explanation.</p></div>
+      </div>
+      <div class="var-card reveal">
+        <span class="var-num">03</span>
+        <div class="var-right"><span class="var-name">Troop Count</span><p class="var-desc">Ribbon width is proportional to surviving soldiers. This is the primary encoding. You watch the army disappear in real time.</p></div>
+      </div>
+      <div class="var-card reveal">
+        <span class="var-num">04</span>
+        <div class="var-right"><span class="var-name">Location</span><p class="var-desc">Key cities are labelled at each major stage, linking abstract movement to recognizable points along the campaign route.</p></div>
+      </div>
+      <div class="var-card reveal">
+        <span class="var-num">05</span>
+        <div class="var-right"><span class="var-name">Date</span><p class="var-desc">Retreat dates appear in the temperature chart, tying the visual journey to a real calendar of the winter of 1812.</p></div>
+      </div>
+      <div class="var-card reveal">
+        <span class="var-num">06</span>
+        <div class="var-right"><span class="var-name">Temperature</span><p class="var-desc">The linked chart plots winter temperatures in Celsius during the retreat. Cold and casualties face each other on the same page.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOURCES and NOTES -->
+<section class="sources-section" id="sources">
+  <div class="sources-inner">
+    <p class="s-head">Sources</p>
+    <div class="s-body">
+      <p>Minard, C.J. (1869). Napoleon's Russian Campaign Flow Map. Paris. &nbsp;&middot;&nbsp; Tufte, E.R. (1983). <em>The Visual Display of Quantitative Information.</em> Graphics Press. &nbsp;&middot;&nbsp; Robinson, A.H. (1967). The Thematic Maps of Charles Joseph Minard. <em>Imago Mundi,</em> 21(1), 95 to 108. &nbsp;&middot;&nbsp; Friendly, M. (2002). Visions and Re-visions of Charles Joseph Minard. <em>Journal of Educational and Behavioral Statistics,</em> 27(1), 31 to 51. Maps courtesy of the Library of Congress and the School of Bridges and Roads, Paris.</p>
+    </div>
+    <hr class="s-divider">
+    <p class="s-head">Notes</p>
+    <div class="s-body">
+      <p>Troop figures are drawn from the historical records of Thiers, de Segur, de Fezensac, and de Chambray. Temperature readings recorded during the retreat have been converted from Reaumur to Celsius using C = R x 1.25. Minard occasionally updated his statistical charts in response to new data. Some smaller detachments are omitted from the main ribbon to better illustrate the overall loss of the army. Troop counts are not shown where numbers fall below a statistically significant threshold for display. Some segments reported an overcount when compared with total enrollment of a particular group; in such cases the disparity score is omitted.</p>
+    </div>
+    <hr class="s-divider">
+    <p class="s-credits">
+      Additional data analysis references: Friendly (2002); Kraak (2014); Python Graph Gallery; infowetrust.com; edwardtufte.com
+    </p>
+  </div>
+</section>
+
+<footer>
+  Visualization and Storytelling &nbsp;&middot;&nbsp; Ontario Tech University &nbsp;&middot;&nbsp; Winter 2026<br>
+  Nisha Naresh &nbsp;&middot;&nbsp; Instructor: Gabby Resch
+</footer>
+
+<script>
+(function(){
+
+  /* ---- TOOLTIP ---- */
+  const tip = document.getElementById('map-tooltip');
+
+  function showTip(e, el){
+    const isAdv = el.classList.contains('adv');
+    const col   = isAdv ? '#c8973a' : '#b05050';
+    const pct   = parseInt(el.dataset.p);
+    tip.innerHTML =
+      '<strong style="color:'+col+'">'+el.dataset.n+'</strong>'+
+      '<div style="font-size:11.5px;color:rgba(250,246,239,.55);margin-top:2px">'+el.dataset.d+' &middot; '+el.dataset.dt+'</div>'+
+      '<div class="ts">Survivors: <span>'+el.dataset.t+'</span></div>'+
+      '<div class="ts">Of original army: <span>'+pct+'%</span></div>'+
+      '<div class="tbar"><div class="tbar-fill" style="width:'+pct+'%;background:'+col+'"></div></div>';
+    tip.classList.add('vis');
+    moveTip(e);
+  }
+
+  function moveTip(e){
+    const tw=230, th=110;
+    const l = e.clientX+16+tw > window.innerWidth  ? e.clientX-tw-8 : e.clientX+16;
+    const t = e.clientY+10+th > window.innerHeight ? e.clientY-th-8 : e.clientY+10;
+    tip.style.left = l+'px'; tip.style.top = t+'px';
+  }
+
+  document.querySelectorAll('.seg').forEach(el => {
+    const isAdv = el.classList.contains('adv');
+    el.style.fill = 'transparent'; el.style.cursor = 'pointer';
+    el.addEventListener('mouseenter', e => {
+      el.style.fill = isAdv ? 'rgba(210,170,50,.18)' : 'rgba(140,30,30,.22)';
+      el.style.transition = 'fill .15s ease';
+      showTip(e, el);
+    });
+    el.addEventListener('mousemove', moveTip);
+    el.addEventListener('mouseleave', () => {
+      el.style.fill = 'transparent';
+      tip.classList.remove('vis');
+    });
+  });
+
+  /* ---- CITY DOT CLICK PANEL ---- */
+  const panel     = document.getElementById('city-panel');
+  const panelCity = document.getElementById('panel-city');
+  const panelInfo = document.getElementById('panel-info');
+  const panelNum  = document.getElementById('panel-num');
+  const panelFill = document.getElementById('panel-pct-fill');
+  const panelLbl  = document.getElementById('panel-pct-lbl');
+  const panelClose= document.getElementById('city-panel-close');
+
+  function fireRipple(dotEl){
+    const cx = dotEl.getAttribute('cx');
+    const cy = dotEl.getAttribute('cy');
+    const svg = dotEl.closest('svg');
+
+    // Create two ripple rings
+    [0, 200].forEach((delay, i) => {
+      setTimeout(() => {
+        const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        c.setAttribute('cx', cx);
+        c.setAttribute('cy', cy);
+        c.setAttribute('r',  dotEl.getAttribute('r'));
+        c.setAttribute('fill','none');
+        c.setAttribute('stroke','#b5221e');
+        c.setAttribute('stroke-width', i===0 ? '2' : '1.2');
+        c.style.opacity = '0';
+        svg.appendChild(c);
+
+        // Animate expansion
+        const startTime = performance.now();
+        const startR = parseFloat(dotEl.getAttribute('r'));
+        const endR   = startR + (i===0 ? 18 : 28);
+        function step(now){
+          const p = Math.min((now - startTime) / 700, 1);
+          const eased = 1 - Math.pow(1-p, 2);
+          c.setAttribute('r', startR + (endR - startR) * eased);
+          c.style.opacity = (1 - p) * (i===0 ? 0.7 : 0.45);
+          if(p < 1) requestAnimationFrame(step);
+          else c.remove();
+        }
+        requestAnimationFrame(step);
+      }, delay);
+    });
+  }
+
+  function openPanel(dot){
+    const city     = dot.dataset.city;
+    const info     = dot.dataset.info;
+    const soldiers = dot.dataset.soldiers;
+    const pct      = parseInt(dot.dataset.pct);
+
+    panelCity.textContent = city;
+    panelInfo.textContent = info;
+    panelNum.textContent  = soldiers;
+    panelLbl.textContent  = pct + '% of original army';
+
+    // Animate bar
+    panelFill.style.width = '0%';
+    panel.style.display   = 'block';
+    // Force reflow then animate bar
+    void panel.offsetWidth;
+    setTimeout(() => { panelFill.style.width = pct + '%'; }, 40);
+
+    // Scroll to panel
+    setTimeout(() => {
+      panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }, 100);
+
+    // Fire ripple on dot
+    fireRipple(dot);
+  }
+
+  function closePanel(){
+    panel.style.display = 'none';
+  }
+
+  document.querySelectorAll('.city-dot').forEach(dot => {
+    dot.addEventListener('click', e => {
+      e.stopPropagation();
+      // Highlight clicked dot
+      document.querySelectorAll('.city-dot').forEach(d => {
+        d.setAttribute('fill', d===dot ? '#b5221e' : (d.id==='dot-berezina' ? '#8e1c1c' : '#1a1208'));
+      });
+      tip.classList.remove('vis');
+      openPanel(dot);
+    });
+  });
+
+  panelClose.addEventListener('click', () => {
+    document.querySelectorAll('.city-dot').forEach(d => {
+      d.setAttribute('fill', d.id==='dot-berezina' ? '#8e1c1c' : '#1a1208');
+    });
+    closePanel();
+  });
+
+  // Click outside map closes panel
+  document.addEventListener('click', e => {
+    if (!document.getElementById('interactive-map').contains(e.target)) {
+      closePanel();
+      document.querySelectorAll('.city-dot').forEach(d => {
+        d.setAttribute('fill', d.id==='dot-berezina' ? '#8e1c1c' : '#1a1208');
+      });
+    }
+  });
+
+  /* ---- SCROLL REVEAL ---- */
+  const ro = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('on');
+        ro.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+  /* ---- MAP FADE IN ---- */
+  const sec = document.getElementById('interactive-map');
+  sec.style.cssText += 'opacity:0;transition:opacity .8s ease';
+  new IntersectionObserver(es => {
+    if (es[0].isIntersecting) sec.style.opacity = '1';
+  }, { threshold: 0.06 }).observe(sec);
+
+})();
+</script>
+</body>
+</html>
