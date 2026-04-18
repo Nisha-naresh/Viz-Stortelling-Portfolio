@@ -21,10 +21,10 @@ This portfolio documents my work in MBAI 5400G: Visualization & Storytelling at 
 - Canva
 
 ## Course
-**Course:** MBAI 5400G — Visualization & Storytelling
-**Professor:** Gabby Resch
-**University:** Ontario Tech University
-**Semester:** Winter 2026
+- **Course:** MBAI 5400G — Visualization & Storytelling
+- **Professor:** Gabby Resch
+- **University:** Ontario Tech University
+- **Semester:** Winter 2026
 
 ## About Me
 Computer Science Engineering graduate, currently pursuing MBAI at Ontario Tech University. Aspiring Data Analyst and 
