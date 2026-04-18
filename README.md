@@ -1,4 +1,4 @@
-# Nisha Naresh — Visualization & Storytelling Portfolio
+# Nisha Naresh - Visualization & Storytelling Portfolio
 
 ## About
 This portfolio documents my work in MBAI 5400G: Visualization & Storytelling at Ontario Tech University. 
@@ -7,11 +7,10 @@ This portfolio documents my work in MBAI 5400G: Visualization & Storytelling at 
 [View Portfolio](https://nisha-naresh.github.io/Viz-Stortelling-Portfolio/)
 
 ## Assignments
-| # | Title | Type | Tools |
-| 01 | Driving Into 2026: Ontario's New Driving Laws | Storyboard | Miro, charts.livegap.com |
-| 02 | Redesigning Minard's Napoleon's March | Interactive Redesign | Python, Plotly, HTML/CSS/JS |
-| 03 | Your Cart Costs More: Canada Food Inflation | Infographic | Canva |
-| 04 | AI & Oshawa Housing Affordability | Scrollytelling | Flourish, HTML/CSS/JS |
+| 01 | Driving Into 2026: Ontario's New Driving Laws 
+| 02 | Redesigning Minard's Napoleon's March 
+| 03 | Your Cart Costs More: Canada Food Inflation 
+| 04 | AI & Oshawa Housing Affordability 
 
 ## Tools Used
 - Python (Matplotlib, Plotly)
