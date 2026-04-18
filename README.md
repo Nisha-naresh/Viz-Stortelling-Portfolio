@@ -10,7 +10,13 @@ This portfolio documents my work in MBAI 5400G: Visualization & Storytelling at 
 - Driving Into 2026: Ontario's New Driving Laws 
 - Redesigning Minard's Napoleon's March 
 - Your Cart Costs More: Canada Food Inflation 
-- AI & Oshawa Housing Affordability 
+- AI & Oshawa Housing Affordability
+
+## Certifications (Data Camp)
+- Introduction to Python
+- Intermediate Python
+- Introduction to AI for work
+- Introduction to Power BI
 
 ## Tools Used
 - Python (Matplotlib, Plotly)
